@@ -17,9 +17,9 @@ function App() {
           'Authorization': authUsername + '&&&' + authPassword
         }
       })
-      localStorage.setItem("user", authUsername);
-      localStorage.setItem("pw", authPassword);
+      localStorage.setItem("sessionId", response.data);
       setPage("todo");
+      console.log(response.data);
     }
     catch (e) {
       alert("wrong username/password");
@@ -30,14 +30,18 @@ function App() {
     try {
       const response = await axios.post('http://localhost:4000/api/todo', { msg: todo }, {
         headers: {
-          'Authorization': authUsername + '&&&' + authPassword
+          'Authorization': localStorage.getItem("sessionId")
         }
       });
       setTodo('');
       alert('todo created');
     }
-    catch (e) {
-      alert('error');
+    catch (error) {
+      if (error.response.status===401) {
+        alert('your session has expired')
+        setPage('log');
+        localStorage.removeItem("sessionId");
+      }
     }
   }
 
@@ -66,10 +70,9 @@ function App() {
   }
 
   useEffect(() => {
-    if (localStorage.getItem("user")) {
+    if (localStorage.getItem("sessionId")) {
       setPage("todo");
-      setAuthUsername(localStorage.getItem("user"));
-      setAuthPassword(localStorage.getItem("pw"));
+      
     }
   }, [])
 
